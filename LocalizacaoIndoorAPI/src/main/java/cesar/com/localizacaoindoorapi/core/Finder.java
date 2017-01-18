@@ -7,6 +7,7 @@ package cesar.com.localizacaoindoorapi.core;
 
 import cesar.com.localizacaoindoorapi.model.Location;
 import cesar.com.localizacaoindoorapi.model.Wifi;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -20,9 +21,9 @@ import java.util.TreeMap;
 public class Finder {
 
     public Location meet(List<Location> persistentLocations, List<Wifi> currentReferences) {
-        Map<Location, Double> locationsfound = new HashMap<Location, Double>();
-        for (Wifi currentReference : currentReferences) {
-            for (Location location : persistentLocations) {
+        Map<Location, Double> locationsfound = new HashMap<>();
+        for (Location location : persistentLocations) {
+            for (Wifi currentReference : currentReferences) {
                 for (Wifi wifi : location.getReferencesAp()) {
                     if (currentReference.getBssid().equals(wifi.getBssid())) {
                         double diff = Math.abs(currentReference.calculateDistance() - wifi.calculateDistance());
@@ -38,8 +39,36 @@ public class Finder {
         if (locationsfound.isEmpty()) {
             return null;
         } else {
-            return (Location) sortByValueMinToMax(locationsfound).keySet().toArray()[0];
+            locationsfound = sortByValueMinToMax(locationsfound);
+            return (Location) locationsfound.keySet().toArray()[0];
         }
+    }
+
+    public List<Wifi> average(List<Wifi> currentReferences) {
+        Map<String, List<Wifi>> mapReferences = new HashMap<>();
+        for (Wifi ref : currentReferences) {
+            if (mapReferences.containsKey(ref.getBssid())) {
+                mapReferences.get(ref.getBssid()).add(ref);
+            } else {
+                List<Wifi> newRef = new ArrayList<>();
+                newRef.add(ref);
+                mapReferences.put(ref.getBssid(), newRef);
+            }
+        }
+        
+        List<Wifi> newReferences = new ArrayList<>();
+        
+        for (Map.Entry<String, List<Wifi>> ref : mapReferences.entrySet()) {
+            double sumLevelInDb = 0D;
+            for (Wifi wifi : ref.getValue()) {
+                sumLevelInDb += wifi.getSignalLevelInDb();
+            }
+            ref.getValue().get(0).setSignalLevelInDb(sumLevelInDb = sumLevelInDb/ref.getValue().size());
+            newReferences.add(ref.getValue().get(0));
+        }
+        
+        return newReferences;
+
     }
 
     public Map sortByValueMinToMax(Map unsortedMap) {

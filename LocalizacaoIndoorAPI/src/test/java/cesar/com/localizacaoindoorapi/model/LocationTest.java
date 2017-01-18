@@ -21,7 +21,7 @@ public class LocationTest {
     }
 
     @Test
-    public void testGetNome() {
+    public void testLocationFind() {
         List<Location> localizacacoes = new ArrayList<Location>();
         Location locationEscritorio = criarLocalizacaoEscritorioTeste();
         Location locationSala = criarLocalizacaoSalaTeste();
@@ -41,8 +41,6 @@ public class LocationTest {
         localizacacoes.clear();
         localizacacoes.add(l1);
         Assert.assertTrue(localizacacoes.contains(l2));
-        
-
     }
 
     private Location criarLocalizacaoEscritorioTeste() {
